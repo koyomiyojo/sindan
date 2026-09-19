@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="生年月日から日干（十干）タイプを端末内だけで調べるアプリ" />
     <title>陰陽五行で知る わたしの十干タイプ</title>
-    <link rel="stylesheet" href="style.css" />
+    <style>
+      :root{--ink:#34443a;--line:#dce7d9}*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#f7f5eb,#eef5ed 55%,#f8faf4);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;font-size:17px;line-height:1.8}.page-shell{width:min(100% - 32px,760px);margin:0 auto;padding:56px 0 36px}.hero{text-align:center;margin:0 auto 32px}.eyebrow{color:#69836a;font-size:.9rem;letter-spacing:.15em;margin:0 0 6px}h1{font-family:serif;color:#486b51;font-size:clamp(2rem,7vw,3.15rem);line-height:1.35;margin:0}.lead{max-width:600px;margin:20px auto 0;text-align:left}.card{background:#fffdf8e6;border:1px solid #cce0c8e6;border-radius:22px;box-shadow:0 12px 30px #49644714}.form-card,.result-card{padding:30px}h2{font-size:1.35rem;margin:0 0 18px}label,input,button{display:block;width:100%}label{font-weight:700;margin-bottom:8px}input{min-height:54px;border:1px solid #aec4ac;border-radius:10px;background:#fff;color:var(--ink);font:inherit;padding:8px 12px}input:focus,button:focus-visible{outline:3px solid #b5d0b5;outline-offset:3px}.privacy-note{margin:12px 0 16px;font-size:.88rem;line-height:1.65;color:#5f7062}.error-message{color:#a33939;font-weight:700;min-height:1.8em;margin:0 0 10px}button{min-height:56px;padding:10px 16px;border-radius:999px;cursor:pointer;font:700 1rem inherit}.primary-button{color:#fff;background:#547c5a;border:1px solid #547c5a}.secondary-button{color:#42664a;background:#f5f8f1;border:1px solid #a7c1a8}.result{margin-top:30px}.result-card{overflow:hidden;border-top:7px solid var(--element-color,#78977a)}.result-label{color:#668168;font-weight:700;margin:0}.result-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:6px 0 18px}.result-heading h2{color:var(--element-deep,#486b51);font-family:serif;font-size:clamp(3.7rem,14vw,5.8rem);line-height:1;margin:0}.reading{margin:6px 0 0;font-size:1.1rem;font-weight:700}.element-badge{flex:0 0 auto;border-radius:999px;background:var(--element-pale);color:var(--element-deep);font-weight:700;padding:7px 14px;margin:0}.image-wrap{height:260px;overflow:hidden;border-radius:15px;background:var(--element-pale)}.image-fallback{display:grid;place-items:center;width:100%;height:100%;color:var(--element-deep);font-family:serif;font-size:8rem;font-weight:700;background:radial-gradient(circle at 50% 35%,#fff9 0 12%,transparent 13%),var(--element-pale)}.nature-image{margin:14px 0 24px;color:var(--element-deep);font-weight:700;text-align:center}.profile-list{margin:0}.profile-list div{border-top:1px solid var(--line);padding:15px 0}dt{color:var(--element-deep);font-weight:700}dd{margin:4px 0 0}.button-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:26px}.copy-message{min-height:1.8em;margin:10px 0 0;color:#486b51;text-align:center;font-size:.92rem}.disclaimer{margin:20px 4px 0;padding:18px;color:#59675c;border-left:4px solid #b7cbb4;font-size:.88rem;line-height:1.75}footer{padding:20px;background:#e4ede1;color:#506552;text-align:center;font-size:.9rem}@media(max-width:520px){.page-shell{width:min(100% - 24px,760px);padding-top:34px}.form-card,.result-card{padding:22px 18px}.image-wrap{height:220px}.button-row{grid-template-columns:1fr}}
+    </style>
   </head>
   <body>
     <main class="page-shell">
@@ -37,7 +39,6 @@
             <p id="element-badge" class="element-badge"></p>
           </div>
           <div class="image-wrap">
-            <img id="stem-image" alt="" />
             <div id="image-fallback" class="image-fallback" aria-hidden="true"></div>
           </div>
           <p id="nature-image" class="nature-image"></p>
@@ -60,6 +61,23 @@
       </section>
     </main>
     <footer>監修：東洋医学コンサルタント／こよみ講師　平野順子</footer>
-    <script src="script.js"></script>
+    <script>
+      "use strict";
+      // 日干は60日周期。基準日2026-09-19=丙申（甲子=0で32、JDN 2461303）との差からUTC相当の日付で計算します。
+      const D=2461303,R=32;
+      const S=[
+        ["甲","こうぼく","陽","木","空へ伸びる大樹","まっすぐで向上心があり、自分の信念を大切にする人","目標に向かって成長し、人を支え導く力","誠実、責任感、行動力、成長意欲","正しさにこだわりすぎると、柔軟に方向を変えることが難しくなることがある","大きな目標を小さな段階に分け、周囲の意見も取り入れながら育てていく","#6f946c","#e8f1df"],
+        ["乙","おつぼく","陰","木","草花やつる植物","やわらかく協調性があり、環境に合わせながら成長できる人","人とのご縁をつなぎ、調和を生み出す力","柔軟性、親しみやすさ、美的感覚、粘り強さ","周囲を優先しすぎて、自分の気持ちを後回しにすることがある","人とのつながりを大切にしながら、自分の希望も言葉にする","#719d75","#e8f3e6"],
+        ["丙","へいか","陽","火","明るく輝く太陽","明るく開放的で、周囲を元気にする人","自分の光で人を照らし、物事を広く伝える力","情熱、明るさ、表現力、行動力","気持ちが先に進み、細かな確認を忘れることがある","持ち前の明るさに丁寧な準備を加えると、魅力がさらに伝わる","#bd6d5c","#fae9e3"],
+        ["丁","ていか","陰","火","ろうそくや灯火","繊細で温かく、人の心にそっと寄り添える人","知性や感性を活かし、人の心に希望の灯をともす力","思いやり、洞察力、集中力、感受性","小さなことを深く考え、心を疲れさせてしまうことがある","静かに集中できる時間と、安心して話せる場所を大切にする","#c47777","#f9e8e8"],
+        ["戊","ぼど","陽","土","大きな山や大地","落ち着きがあり、どっしりと人を受け止める人","人や物事の土台をつくり、安心感を与える力","信頼感、包容力、安定感、責任感","一度決めたことを変えるまでに時間がかかることがある","守るものと変えてよいものを分け、小さな変化を受け入れる","#9b8051","#f5eddc"],
+        ["己","きど","陰","土","作物を育てる田畑","面倒見がよく、細やかに人を育てる人","経験や知識を蓄え、相手に合わせて育む力","実務力、忍耐力、気配り、育成力","心配ごとを抱え込み、世話をしすぎてしまうことがある","人を支えるだけでなく、自分自身をいたわる時間も確保する","#a68b55","#f6efdc"],
+        ["庚","こうきん","陽","金","鉄や刀、磨かれる原石","決断力と正義感があり、行動によって道を切り開く人","困難を乗り越え、不要なものを整理して改革する力","決断力、実行力、勇気、潔さ","結論を急ぐと、言葉が強く伝わることがある","決断する前に相手の事情を一度受け止めると、強さが信頼につながる","#758487","#edf0ee"],
+        ["辛","しんきん","陰","金","美しく磨かれた宝石","繊細で美意識が高く、自分の品格を大切にする人","物事の価値を見極め、磨き上げて魅力を引き出す力","美的感覚、観察力、気品、専門性","理想が高く、自分や周囲に厳しくなることがある","完成度だけでなく、そこまで積み重ねた過程も認める","#8a8694","#f1eff4"],
+        ["壬","じんすい","陽","水","海や大河","自由な発想と広い視野を持ち、変化を楽しめる人","多くの情報や人をつなぎ、大きな流れをつくる力","柔軟性、知恵、行動範囲の広さ、包容力","興味が広がりすぎると、目的を見失うことがある","自由な発想を活かしながら、今取り組むことを一つ決める","#467a96","#e2f0f4"],
+        ["癸","きすい","陰","水","雨や露、地下水","静かな知性と感受性を持ち、細やかな変化に気づける人","知識や思いやりを少しずつ届け、人や物事を潤す力","洞察力、学習力、優しさ、適応力","周囲の感情を受け取りすぎて、迷いや不安が増えることがある","情報を集める時間と、考えを整理して決める時間を分ける","#527c9e","#e6f0f6"]];
+      const q=s=>document.querySelector(s),input=q("#birthdate"),form=q("#birth-form"),result=q("#result"),err=q("#error-message"),max=new Date().toISOString().slice(0,10); input.max=max;
+      function j(iso){let[y,m,d]=iso.split("-").map(Number),a=Math.floor((14-m)/12),Y=y+4800-a,M=m+12*a-3;return d+Math.floor((153*M+2)/5)+365*Y+Math.floor(Y/4)-Math.floor(Y/100)+Math.floor(Y/400)-32045}function stem(x){return S[(((R+j(x)-D)%60+60)%60)%10]}function ok(x){if(!/^\d{4}-\d{2}-\d{2}$/.test(x))return false;let[y,m,d]=x.split("-").map(Number),z=new Date(Date.UTC(y,m-1,d));return z.getUTCFullYear()==y&&z.getUTCMonth()==m-1&&z.getUTCDate()==d}function show(s){let r=q("#result-card");r.style.setProperty("--element-color",s[10]);r.style.setProperty("--element-deep",s[10]);r.style.setProperty("--element-pale",s[11]);q("#stem-character").textContent=s[0];q("#stem-reading").textContent=s[1];q("#element-badge").textContent=`${s[2]}の${s[3]}`;q("#image-fallback").textContent=s[0];q("#nature-image").textContent=`自然のイメージ：${s[4]}`;[["#personality",5],["#talent",6],["#strengths",7],["#caution",8],["#hint",9]].forEach(x=>q(x[0]).textContent=s[x[1]]);result.hidden=false;result.scrollIntoView({behavior:"smooth",block:"start"})}form.addEventListener("submit",e=>{e.preventDefault();let v=input.value;err.textContent=!v?"生年月日を入力してください。":!ok(v)?"正しい日付を入力してください。":v<"1900-01-01"?"1900年1月1日以降の日付を入力してください。":v>max?"未来の日付は入力できません。":"";if(!err.textContent)show(stem(v))});q("#reset-button").onclick=()=>{result.hidden=true;input.focus()};q("#copy-button").onclick=async()=>{let s=stem(input.value),t=`わたしの十干タイプ：${s[0]}（${s[1]}）／${s[2]}の${s[3]}\n自然のイメージ：${s[4]}\n基本的な性質：${s[5]}\n生まれ持った素質：${s[6]}\n長所：${s[7]}\n気をつけたい傾向：${s[8]}\n自分らしさを活かすヒント：${s[9]}`;try{await navigator.clipboard.writeText(t);q("#copy-message").textContent="結果をコピーしました。"}catch{q("#copy-message").textContent="コピーできませんでした。内容を選択してコピーしてください。"}};console.assert(stem("2026-09-19")[0]==="丙");
+    </script>
   </body>
 </html>
